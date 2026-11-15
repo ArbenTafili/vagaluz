@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Espécies (dev)</title>
+<style>body{background:#2b2840;color:#eee;font:11px system-ui;margin:6px}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:4px}.c{background:#3a3654;border-radius:6px;padding:2px;text-align:center}canvas{image-rendering:pixelated;width:96px;height:96px}</style></head>
+<body><div class="g" id="g"></div>
+<script type="module">
+import * as S from '../js/sprites.js';
+import { DEX_ORDER, SPECIES } from '../js/data.js';
+import { toCanvas } from '../js/gfx.js';
+const q = new URLSearchParams(location.search); const from = +(q.get('from') || 0), n = +(q.get('n') || 300);
+for (const id of DEX_ORDER.slice(from, from + n)) {
+  const d = document.createElement('div'); d.className = 'c';
+  d.appendChild(toCanvas(S.creature(id)));
+  const sp = SPECIES[id]; d.append(`#${DEX_ORDER.indexOf(id) + 1} ${sp.name} (${sp.type})`);
+  document.getElementById('g').appendChild(d);
+}
+</script></body></html>

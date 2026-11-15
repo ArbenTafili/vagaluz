@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <title>Vagaluz</title>
+  <meta name="description" content="Vagaluz — cuide do seu espírito companheiro e explore a Trilha da Bruma.">
+  <meta name="theme-color" content="#16142a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <div id="view">
+    <canvas id="game"></canvas>
+
+    <div id="hud" class="hidden">
+      <div class="hud-left">
+        <div id="hud-loc" class="pill"></div>
+        <button id="hud-pet" class="chip" aria-label="Companheiro"><canvas width="16" height="16"></canvas><span class="need"></span></button>
+      </div>
+      <div class="hud-right">
+        <div id="hud-clock" class="pill"></div>
+        <button id="btn-sound" class="icon-btn" aria-label="Som"></button>
+      </div>
+    </div>
+
+    <div id="banner"></div>
+    <button id="hab-btn" class="hab-btn hidden"></button>
+
+    <div id="battle-cards" class="hidden">
+      <div id="card-foe" class="card">
+        <div class="row"><b class="nm"></b><span class="lv"></span></div>
+        <div class="row"><span class="type"></span><span class="rec">♦</span></div>
+        <div class="bar hp"><i></i></div>
+      </div>
+      <div id="card-me" class="card">
+        <div class="row"><b class="nm"></b><span class="lv"></span></div>
+        <div class="bar hp"><i></i></div>
+        <div class="row small"><span class="type"></span><span class="hpnum"></span></div>
+        <div class="bar xp"><i></i></div>
+      </div>
+    </div>
+
+    <div id="fx"></div>
+
+    <div id="title-ui" class="hidden">
+      <div class="logo">Vagaluz</div>
+      <div class="sub">Espíritos da Bruma</div>
+    </div>
+
+    <div id="msg" class="hidden">
+      <div class="speaker"></div>
+      <div class="text"></div>
+      <div class="choices"></div>
+      <div class="next">▼</div>
+    </div>
+
+    <div id="toast"></div>
+    <div id="fade"></div>
+  </div>
+
+  <div id="panel">
+    <!-- exploração (toque no mapa para andar) -->
+    <section id="p-world" class="psec">
+      <button id="comp-card" class="comp-card" aria-label="Cuidar do companheiro">
+        <canvas id="cc-img" width="24" height="24"></canvas>
+        <div class="cc-info">
+          <div class="cc-top"><b id="cc-name"></b><span id="cc-lv" class="lv"></span><span id="cc-mood" class="cc-mood"></span></div>
+          <div class="cc-bars"><i data-k="hunger"><b></b></i><i data-k="joy"><b></b></i><i data-k="energy"><b></b></i><i data-k="clean"><b></b></i></div>
+          <small id="cc-need"></small>
+        </div>
+      </button>
+      <div class="wbtns">
+        <button id="btn-pet" class="pbtn"><span class="ico" data-ico="paw"></span><span>Cuidar</span></button>
+        <button id="btn-party" class="pbtn"><span class="ico" data-ico="party"></span><span>Grupo</span></button>
+        <button id="btn-dex" class="pbtn"><span class="ico" data-ico="book"></span><span>Espiritário</span></button>
+      </div>
+      <p class="hint">Toque no mapa para andar · toque em pessoas e objetos para interagir</p>
+    </section>
+
+    <!-- batalha -->
+    <section id="p-battle" class="psec">
+      <div id="btext" class="btext"></div>
+      <div id="bmenu" class="grid">
+        <button data-act="fight" class="act fight"><span class="ico" data-ico="spark"></span>Lutar</button>
+        <button data-act="fita" class="act fita"><span class="ico" data-ico="ribbon"></span>Fita <small id="fita-count"></small></button>
+        <button data-act="party" class="act party"><span class="ico" data-ico="party"></span>Grupo</button>
+        <button data-act="run" class="act run"><span class="ico" data-ico="run"></span>Fugir</button>
+      </div>
+      <div id="bmoves" class="grid hidden"></div>
+    </section>
+
+    <!-- bichinho -->
+    <section id="p-pet" class="psec">
+      <div class="pet-head">
+        <div><b id="pet-name"></b> <span id="pet-lv" class="lv"></span></div>
+        <span id="pet-mood" class="mood"></span>
+      </div>
+      <div class="bar xp" id="pet-xp"><i></i></div>
+      <div class="meters">
+        <div class="meter" data-k="hunger"><span class="ico" data-ico="food"></span><span class="lbl">Fome</span><div class="bar"><i></i></div></div>
+        <div class="meter" data-k="joy"><span class="ico" data-ico="heart"></span><span class="lbl">Alegria</span><div class="bar"><i></i></div></div>
+        <div class="meter" data-k="energy"><span class="ico" data-ico="bolt"></span><span class="lbl">Energia</span><div class="bar"><i></i></div></div>
+        <div class="meter" data-k="clean"><span class="ico" data-ico="drop"></span><span class="lbl">Limpeza</span><div class="bar"><i></i></div></div>
+      </div>
+      <div class="pet-acts">
+        <button data-pet="feed" class="pact"><span class="ico" data-ico="food"></span>Comer</button>
+        <button data-pet="play" class="pact"><span class="ico" data-ico="star"></span>Brincar</button>
+        <button data-pet="bath" class="pact"><span class="ico" data-ico="drop"></span>Banho</button>
+        <button data-pet="sleep" class="pact"><span class="ico" data-ico="moon"></span><span class="sl">Dormir</span></button>
+      </div>
+      <button id="btn-explore" class="wide">Explorar <span class="ico" data-ico="arrow"></span></button>
+    </section>
+
+    <!-- título / ovo -->
+    <section id="p-title" class="psec">
+      <div class="title-btns">
+        <button id="btn-continue" class="wide big">Continuar</button>
+        <button id="btn-new" class="wide ghost">Novo jogo</button>
+      </div>
+      <p class="hint">Instale pelo menu do Chrome: “Adicionar à tela inicial”.</p>
+    </section>
+    <section id="p-hatch" class="psec">
+      <p class="hint big" id="hatch-hint">Toque no ovo para ajudá-lo a chocar!</p>
+    </section>
+  </div>
+
+  <div id="sheet" class="hidden">
+    <div class="sheet-card">
+      <div class="sheet-head"><b id="sheet-title">Grupo</b><button id="sheet-close" class="icon-btn" aria-label="Fechar">✕</button></div>
+      <div id="sheet-body"></div>
+    </div>
+  </div>
+
+  <div id="name-dlg" class="hidden">
+    <div class="sheet-card small">
+      <b>Dê um nome ao seu companheiro</b>
+      <input id="name-input" maxlength="12" autocomplete="off" spellcheck="false">
+      <button id="name-ok" class="wide big">Confirmar</button>
+    </div>
+  </div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
