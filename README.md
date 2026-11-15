@@ -37,11 +37,11 @@ Toda a arte, os nomes, os mapas e as músicas são originais e gerados por códi
 
 Assim o jogo roda e salva normalmente. Mas, como não é um endereço seguro (https), o Chrome não ativa o modo offline: o atalho da tela inicial só funciona com o Mac ligado e o comando rodando.
 
-### Jeito 2 (recomendado): site grátis com https, instalável e offline
+### Jeito 2 (recomendado): instalar pelo site, funciona offline
 
-Publicando a pasta num site gratuito com https (por exemplo o **GitHub Pages**), o jogo vira um app de verdade:
+O jogo está publicado de graça no GitHub Pages: **https://arbentafili.github.io/vagaluz/**
 
-1. Abra o link do jogo no Chrome do celular.
+1. Abra esse link no Chrome do celular.
 2. Toque no menu **⋮** e depois em **“Instalar app”** ou **“Adicionar à tela inicial”**.
 3. Pronto: o ícone do Vagaluz aparece na tela inicial, abre em tela cheia e **funciona sem internet**.
 
