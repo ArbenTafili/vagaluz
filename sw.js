@@ -1,8 +1,8 @@
 // sw.js — deixa o jogo funcionar offline (cache dos arquivos do app).
-const VERSION = 'vagaluz-v1';
+const VERSION = 'vagaluz-v2';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'css/style.css',
-  'js/main.js', 'js/engine.js', 'js/gfx.js', 'js/sprites.js', 'js/gen.js', 'js/data.js', 'js/maps.js',
+  'js/main.js', 'js/engine.js', 'js/gfx.js', 'js/sprites.js', 'js/gen.js', 'js/myth.js', 'js/mythart.js', 'js/data.js', 'js/maps.js',
   'js/state.js', 'js/audio.js', 'js/ui.js', 'js/world.js', 'js/battle.js', 'js/pet.js', 'js/scenes.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png',
 ];

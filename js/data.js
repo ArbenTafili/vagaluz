@@ -1,5 +1,6 @@
-// data.js — tipos, golpes, espécies (18 feitas à mão + 282 geradas) e regras.
+// data.js — tipos, golpes, espécies (18 feitas à mão + 282 geradas + 300 Lendas e Feras) e regras.
 import { buildGenerated, GEN_SPECIES, GEN_ORDER } from './gen.js';
+import { buildMyth, MYTH_SPECIES, MYTH_ORDER, MYTH_MOVES } from './myth.js';
 
 export const TYPES = {
   comum: { name: 'Comum', color: '#9a948f' },
@@ -124,7 +125,12 @@ export const SPECIES = {
 const HANDMADE = Object.keys(SPECIES);
 buildGenerated(new Set(Object.values(SPECIES).map(s => s.name)));
 Object.assign(SPECIES, GEN_SPECIES);
-export const DEX_ORDER = [...HANDMADE, ...GEN_ORDER];
+// #301–#600: Lendas e Feras (estilo de arte diferente, em js/myth.js e js/mythart.js)
+Object.assign(MOVES, MYTH_MOVES);
+buildMyth(new Set(Object.values(SPECIES).map(s => s.name)));
+Object.assign(SPECIES, MYTH_SPECIES);
+export const DEX_ORDER = [...HANDMADE, ...GEN_ORDER, ...MYTH_ORDER];
+export const LEGENDS = MYTH_ORDER.filter(id => MYTH_SPECIES[id].legend);
 export const STARTERS = [
   { id: 'pirilim', egg: 'brasa', label: 'Ovo morno', hint: 'pulsa com um calor gostoso' },
   { id: 'bolhim', egg: 'rio', label: 'Ovo orvalhado', hint: 'está sempre úmido e fresquinho' },
@@ -165,10 +171,18 @@ export const ENCOUNTERS = {
   sul: { dia: [], noite: [], levels: [2, 4] },
   norte: { dia: [], noite: [], levels: [4, 7] },
 };
-let gj = 0;
+let gj = 0, mj = 0;
 for (const id of DEX_ORDER) {
   const sp = SPECIES[id];
   if (!sp.wild) continue;
+  if (sp.legend) { ENCOUNTERS.norte.noite.push([id, 0.12]); continue; } // lendas: raríssimas, só no norte à noite (ou no monólito)
+  if (sp.myth) {
+    const j = mj++;
+    const zone = j % 2 ? 'sul' : 'norte';
+    const per = [['noite'], ['dia', 'noite'], ['dia']][Math.floor(j / 2) % 3];
+    for (const p of per) ENCOUNTERS[zone][p].push([id, sp.rare ? 1.2 : 3.2]);
+    continue;
+  }
   if (!sp.gen) {
     const w = sp.rare ? 3 : 9;
     const zone = sp.rare ? 'norte' : 'sul';

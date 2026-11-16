@@ -257,7 +257,7 @@ export function updateCompCard() {
   if (cv.dataset.sp !== c.species) { cv.dataset.sp = c.species; cv.width = 48; cv.height = 48; const x = cv.getContext('2d'); x.clearRect(0, 0, 48, 48); x.drawImage(portrait(c.species), 0, 0); }
 }
 
-// ---------- espiritário (coleção de 300 espécies) ----------
+// ---------- espiritário (coleção de 600 espécies) ----------
 export function openDex() {
   const s = G.save, sheet = $('#sheet'), body = $('#sheet-body');
   const seen = DEX_ORDER.filter(id => s.seen[id]).length, caught = DEX_ORDER.filter(id => s.seen[id + '_caught']).length;
@@ -272,7 +272,7 @@ export function openDex() {
     head.innerHTML = ''; head.appendChild(portrait(id));
     const info = document.createElement('div');
     const evo = sp.evolve ? (s.seen[sp.evolve.to] ? `Evolui para ${SPECIES[sp.evolve.to].name} no Nv. ${sp.evolve.level}.` : `Evolui no Nv. ${sp.evolve.level}.`) : '';
-    info.innerHTML = `<b>${num(i)} ${sp.name}</b> ${typeBadge(sp.type)}<p>${sp.dex}</p><p>${evo} ${s.seen[id + '_caught'] ? '<span style="color:var(--pink)">♦ Laço criado</span>' : 'Visto na natureza'}</p>`;
+    info.innerHTML = `<b>${num(i)} ${sp.name}</b> ${typeBadge(sp.type)}${sp.legend ? ' <span style="color:#ffd66b">★ Lendário</span>' : ''}<p>${sp.dex}</p><p>${evo} ${s.seen[id + '_caught'] ? '<span style="color:var(--pink)">♦ Laço criado</span>' : 'Visto na natureza'}</p>`;
     head.appendChild(info);
   };
   const frag = document.createDocumentFragment();

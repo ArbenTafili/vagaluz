@@ -12,13 +12,16 @@ Um jogo original de **bichinho virtual + aventura de capturar criaturas**, feito
 - **Dia e noite de verdade**, seguindo o relógio do celular: lampiões, janelas acesas e vaga-lumes à noite. Alguns espíritos só aparecem no escuro.
 - **Batalhas por turnos** com 10 tipos (Comum, Brasa, Rio, Mata, Bruma, Pedra, Vento, Luz, Gelo e Raio) e mais de 40 golpes.
 - **Criar laços** com espíritos selvagens usando Fitas-encanto, num grupo de até 6. Os demais vão morar na sua casa.
-- **300 espécies** com evoluções de até 3 estágios. As 18 principais foram desenhadas à mão (em código) e as outras 282 vêm de um gerador que monta cada criatura de forma única e sempre igual.
+- **600 espécies** com evoluções de até 3 estágios:
+  - **#1–#300, Espíritos da Bruma:** criaturas fofas e redondinhas. As 18 principais foram desenhadas à mão (em código) e as outras 282 vêm de um gerador que monta cada uma de forma única e sempre igual.
+  - **#301–#600, Lendas e Feras:** um estilo de arte bem diferente, com criaturas de perfil (lobos, raposas de várias caudas, aves de rapina, serpentes-dragão, dragões alados, baleias, mariposas), divindades e colossos de frente, olhos afiados e marcas que brilham. São 240 feras, muitas com 3 estágios, e **60 lendas** inspiradas em mitos do sol, da lua, do trovão, do mar e das montanhas, com auréolas, discos solares, coroas e orbes.
+- **Lendas:** aparecem raramente no norte da trilha à noite. Também dá para tocar no **Monólito** da trilha à noite: uma vez por noite, ele desperta um espírito lendário.
 - **Espiritário**: a coleção com todas as espécies que você já viu e com quem criou laço.
 - **Domadores**: Lia (sul da trilha) e Duda (norte) desafiam você para batalhas com vários espíritos.
 - **Habitat**: dentro de casa, o botão “Habitat” mostra todos os seus espíritos passeando juntos. É o primeiro passo para o habitat estilo Habbo.
 - **Trocar de companheiro**: no Grupo, qualquer espírito pode virar o seu companheiro.
 
-Toda a arte, os nomes, os mapas e as músicas são originais e gerados por código. Nenhum personagem de outro jogo foi usado.
+Toda a arte, os nomes, os mapas e as músicas são originais e gerados por código. Nenhum personagem de outro jogo foi usado: as Lendas e Feras partem só de arquétipos (lobo, dragão, fênix...) e de temas de mitologia.
 
 ## Como jogar no celular
 
@@ -59,6 +62,7 @@ O jogo está publicado de graça no GitHub Pages: **https://arbentafili.github.i
 - Não precisa instalar nada nem compilar: é HTML, CSS e JavaScript puro (módulos ES).
 - `js/sprites.js`: toda a pixel art (criaturas, personagens, tiles, casas).
 - `js/gen.js`: gerador determinístico das 282 espécies extras (nome, cores, partes do corpo, golpes e evolução).
+- `js/myth.js` e `js/mythart.js`: as 300 Lendas e Feras (dados e arte, com 8 tipos de corpo diferentes).
 - `js/data.js`: tipos, golpes, espécies, encontros e domadores.
 - `js/world.js` (exploração), `js/battle.js` (batalhas), `js/pet.js` (bichinho, habitat e ovos), `js/scenes.js` (título e evolução).
 - `tools/sheet.html`: galeria de todas as espécies (abra pelo servidor local em `/tools/sheet.html`).

@@ -3,7 +3,7 @@ import { G, spr, input, consume, wait, tween, ease, dayPhase, DIRS, rand, randi,
 import * as S from './sprites.js';
 import { Pix, hex, hash2, makeCanvas } from './gfx.js';
 import { MAPS, SOLID, DIALOG } from './maps.js';
-import { ENCOUNTERS, makeCreature, SPECIES, TAMERS } from './data.js';
+import { ENCOUNTERS, makeCreature, SPECIES, TAMERS, LEGENDS } from './data.js';
 import { say, choose, setPanel, banner, toast, fadeOut, fadeIn, updateHud, $ } from './ui.js';
 import { sfx, playMusic } from './audio.js';
 import { companion, healAll, petAdd, moodOf, writeSave, firstAlive } from './state.js';
@@ -313,7 +313,8 @@ export class World {
     const zone = this.m.zone ? this.m.zone(this.p.x, this.p.y) : 'sul';
     const tab = ENCOUNTERS[zone]; const period = dayPhase().period;
     const sp = pickWeighted(tab[period]);
-    const lvl = randi(tab.levels[0], tab.levels[1]);
+    // lendas aparecem mais fortes que o resto da zona
+    const lvl = SPECIES[sp].legend ? tab.levels[1] + randi(3, 5) : randi(tab.levels[0], tab.levels[1]);
     sfx('encounter'); this.excl = 0.6;
     await wait(450);
     this.flash = 0.35; await wait(380);
@@ -396,7 +397,30 @@ export class World {
       this.burst(this.p.x * T + 8, this.p.y * T - 10, 16, ['#b49cff', '#7cf5d8', '#ffffff'], 'sparkle');
       await say(['Você ganhou 3 Doces de Luar!', 'Dê um ao seu companheiro na tela dele: ele vai adorar.']);
       writeSave(s);
-    } else await say(['As runas pulsam devagar, como uma respiração.', 'Dizem que esta pedra é mais velha que a própria vila.']);
+    } else await this.legendRite();
+  }
+  // à noite, o monólito desperta um espírito lendário (um por noite, sempre o mesmo naquela data)
+  async legendRite() {
+    const s = G.save;
+    const now = new Date(); if (now.getHours() < 12) now.setDate(now.getDate() - 1); // madrugada conta como a noite anterior
+    const night = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+    if (!dayPhase().night) { await say(['As runas pulsam devagar, como uma respiração.', 'Dizem que, à noite, esta pedra chama espíritos lendários...']); return; }
+    if (s.flags.legendNight === night) { await say(['As runas estão quietas.', 'O espírito lendário desta noite já veio. Volte amanhã à noite!']); return; }
+    const seed = [...night].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
+    const id = LEGENDS[seed % LEGENDS.length];
+    const ok = await choose('As runas brilham com a luz da lua... Tocar na pedra?', ['Tocar', 'Agora não']);
+    if (ok !== 0) return;
+    s.flags.legendNight = night; writeSave(s);
+    this.locked = true;
+    this.burst(this.p.x * T + 8, this.p.y * T - 10, 24, ['#b49cff', '#7cf5d8', '#ffffff', '#ffe58a'], 'sparkle');
+    await say(['A pedra treme e uma luz sobe até o céu!', 'Um espírito lendário despertou!'], { auto: 1100 });
+    const comp = companion(s);
+    const lvl = Math.max(8, Math.min(40, (comp ? comp.level : 6) + 3));
+    sfx('encounter'); this.excl = 0.6; this.flash = 0.5;
+    await wait(500);
+    G.wipe = { p: 0 }; await tween(G.wipe, { p: 1 }, 520, ease.inOut);
+    this.locked = false;
+    await G.goto('battle', { foe: makeCreature(id, lvl) });
   }
 
   updateNpcs(dt) {

@@ -2,6 +2,8 @@
 // Puro: não usa DOM. Cada função devolve um Pix (buffer de pixels).
 import { Pix, hex, rgba, mix, withAlpha, outlineOf, rng, hash2 } from './gfx.js';
 import { GENOMES } from './gen.js';
+import { MYTH_GENOMES } from './myth.js';
+import { mythCreature } from './mythart.js';
 
 const H = (...a) => a.map(c => hex(c));
 const EYE = hex('#2a1630');
@@ -507,6 +509,7 @@ function genCreature(g, fr, expr) {
 
 export function creature(id, frame = 0, expr = 'neutral') {
   const art = SPECIES_ART[id];
+  if (!art && MYTH_GENOMES[id]) return mythCreature(MYTH_GENOMES[id], frame, expr);
   if (!art) return genCreature(GENOMES[id], frame, expr);
   const p = new Pix(48, 48);
   art.draw(p, frame);

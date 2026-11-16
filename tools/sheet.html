@@ -7,7 +7,7 @@
 import * as S from '../js/sprites.js';
 import { DEX_ORDER, SPECIES } from '../js/data.js';
 import { toCanvas } from '../js/gfx.js';
-const q = new URLSearchParams(location.search); const from = +(q.get('from') || 0), n = +(q.get('n') || 300);
+const q = new URLSearchParams(location.search); const from = +(q.get('from') || 0), n = +(q.get('n') || 600);
 for (const id of DEX_ORDER.slice(from, from + n)) {
   const d = document.createElement('div'); d.className = 'c';
   d.appendChild(toCanvas(S.creature(id)));

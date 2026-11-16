@@ -11,7 +11,11 @@ import { glowSprite } from './world.js';
 const TYPE_FX = {
   comum: ['#ffffff', '#ffe9c4'], brasa: ['#fff1a8', '#ffb648', '#ff6a3d'], rio: ['#d6f3ff', '#6ac2ff', '#3a86dc'],
   mata: ['#d4f78a', '#7bc950', '#3f8f3a'], bruma: ['#f4ecff', '#c4a8ff', '#8a6ae0'], pedra: ['#f0ede3', '#c7bfac', '#8f8676'],
+  vento: ['#f2fffb', '#b8f0dc', '#6fd3b4'], luz: ['#ffffff', '#fff3b0', '#ffd66b'], gelo: ['#ffffff', '#cdf2ff', '#8fd8f5'],
+  raio: ['#ffffff', '#fff27a', '#ffc93d'],
 };
+// cores do efeito de cada tipo; um tipo sem cor própria usa as do Comum em vez de quebrar a batalha
+const fxCols = (type) => TYPE_FX[type] || TYPE_FX.comum;
 const stageMul = s => (s >= 0 ? (2 + s) / 2 : 2 / (2 - s));
 
 export class Battle {
@@ -168,46 +172,70 @@ export class Battle {
   async run() {
     const s = G.save;
     if (this.tamer) await say([`${this.tamer.name} quer batalhar!`, `${this.tamer.name} enviou ${this.foe.name}!`], { auto: 900 });
+    else if (SPECIES[this.foe.species].legend) { this.flashW = 0.25; sfx('super'); await say([`O lendário ${this.foe.name} apareceu!`, 'Ele é muito forte. Laços com lendas são raríssimos!'], { auto: 1100 }); }
     else await say([`Um ${this.foe.name} selvagem apareceu!`], { auto: 900 });
     await this.moodLine();
     while (!this.done) {
-      const act = await this.menu();
-      this.skipFoe = false;
-      if (act.kind === 'run' && this.tamer) { await say(['Não dá pra fugir de uma batalha contra um domador!']); continue; }
-      if (act.kind === 'fita' && this.tamer) { await say(['Não dá pra criar laço com o espírito de outro domador!']); continue; }
-      if (act.kind === 'run') {
-        const ok = statsFor(this.me.species, this.me.level).spd >= statsFor(this.foe.species, this.foe.level).spd || Math.random() < 0.65;
-        if (ok) { sfx('run'); await say(['Você fugiu em segurança!'], { auto: 700 }); return this.end('run'); }
-        await say(['Não deu pra fugir!'], { auto: 700 });
-        if (await this.foeTurn()) return;
-        continue;
-      }
-      if (act.kind === 'fita') {
-        if (s.items.fita <= 0) { await say(['Você não tem mais Fitas-encanto!', 'O cristal do Santuário pode renovar suas fitas.']); continue; }
-        s.items.fita--;
-        if (await this.recruit()) return;
-        if (await this.foeTurn()) return;
-        continue;
-      }
-      if (act.kind === 'party') {
-        const i = await openParty('battle', { active: this.meIdx });
-        if (i < 0) continue;
-        await this.switchTo(i);
-        if (await this.foeTurn()) return;
-        continue;
-      }
-      if (act.kind === 'move') {
-        const mySpd = statsFor(this.me.species, this.me.level).spd, foeSpd = statsFor(this.foe.species, this.foe.level).spd;
-        const meFirst = mySpd > foeSpd || (mySpd === foeSpd && Math.random() < 0.5);
-        if (meFirst) {
-          if (await this.myTurn(act.move)) return;
-          if (await this.foeTurn()) return;
-        } else {
-          if (await this.foeTurn()) return;
-          if (await this.myTurn(act.move)) return;
+      try {
+        if (await this.turn()) return;
+      } catch (err) {
+        // nunca deixa a batalha travada: registra o erro e volta para o menu
+        console.error('Erro no turno da batalha:', err);
+        try {
+          this.parts = []; this.ribbon = null;
+          for (const k of ['me', 'foe']) Object.assign(this.vis[k], { ox: 0, oy: 0, sc: 1, flash: 0, sil: 0, a: (k === 'me' ? this.me : this.foe).hp > 0 ? 1 : 0 });
+          this.updateCards(true);
+          if (this.me.hp <= 0) { if (await this.meFainted()) return; }
+          else if (this.foe.hp <= 0) { if (await this.victory()) return; }
+        } catch (err2) {
+          // se nem a recuperação der certo, encerra a batalha e volta ao mapa
+          console.error('Batalha encerrada por segurança:', err2);
+          if (!this.done) await this.end('run');
+          return;
         }
       }
     }
+  }
+  // um turno completo; devolve true se a batalha acabou
+  async turn() {
+    const s = G.save;
+    const act = await this.menu();
+    this.skipFoe = false;
+    if (act.kind === 'run' && this.tamer) { await say(['Não dá pra fugir de uma batalha contra um domador!']); return false; }
+    if (act.kind === 'fita' && this.tamer) { await say(['Não dá pra criar laço com o espírito de outro domador!']); return false; }
+    if (act.kind === 'run') {
+      const ok = statsFor(this.me.species, this.me.level).spd >= statsFor(this.foe.species, this.foe.level).spd || Math.random() < 0.65;
+      if (ok) { sfx('run'); await say(['Você fugiu em segurança!'], { auto: 700 }); await this.end('run'); return true; }
+      await say(['Não deu pra fugir!'], { auto: 700 });
+      if (await this.foeTurn()) return true;
+      return false;
+    }
+    if (act.kind === 'fita') {
+      if (s.items.fita <= 0) { await say(['Você não tem mais Fitas-encanto!', 'O cristal do Santuário pode renovar suas fitas.']); return false; }
+      s.items.fita--;
+      if (await this.recruit()) return true;
+      if (await this.foeTurn()) return true;
+      return false;
+    }
+    if (act.kind === 'party') {
+      const i = await openParty('battle', { active: this.meIdx });
+      if (i < 0) return false;
+      await this.switchTo(i);
+      if (await this.foeTurn()) return true;
+      return false;
+    }
+    if (act.kind === 'move') {
+      const mySpd = statsFor(this.me.species, this.me.level).spd, foeSpd = statsFor(this.foe.species, this.foe.level).spd;
+      const meFirst = mySpd > foeSpd || (mySpd === foeSpd && Math.random() < 0.5);
+      if (meFirst) {
+        if (await this.myTurn(act.move)) return true;
+        if (await this.foeTurn()) return true;
+      } else {
+        if (await this.foeTurn()) return true;
+        if (await this.myTurn(act.move)) return true;
+      }
+    }
+    return false;
   }
   async moodLine() {
     const me = this.me; if (!me.companion) return;
@@ -248,7 +276,7 @@ export class Battle {
     if (!m.power) {
       const e = m.effect, who = e.target === 'self' ? side : tgt;
       const st = this.stages[who];
-      await this.statFx(who, e.stages > 0, TYPE_FX[m.type]);
+      await this.statFx(who, e.stages > 0, fxCols(m.type));
       const name = who === 'foe' ? this.foeName() : this.me.name;
       const statName = { atk: 'ataque', def: 'defesa' }[e.stat];
       if (Math.abs(st[e.stat] + e.stages) > 3) { await say([`O ${statName} de ${name} não muda mais!`], { auto: 800 }); return; }
@@ -321,7 +349,7 @@ export class Battle {
   async victory() {
     const s = G.save, foe = this.foe;
     sfx('faint');
-    this.burst(this.pos.foe.x, this.pos.foe.y - 20, 18, TYPE_FX[SPECIES[foe.species].type]);
+    this.burst(this.pos.foe.x, this.pos.foe.y - 20, 18, fxCols(SPECIES[foe.species].type));
     await tween(this.vis.foe, { oy: 24, a: 0 }, 520, ease.inQuad);
     await say([`${this.foeName()} ficou exausto!`], { auto: 900 });
     petAdd(s, { joy: 2, energy: -2, hunger: -1, clean: -1 });
@@ -442,7 +470,7 @@ export class Battle {
   }
   async projectile(side, type) {
     const a = this.pos[side], b = this.pos[side === 'me' ? 'foe' : 'me'];
-    const cols = TYPE_FX[type];
+    const cols = fxCols(type);
     for (let i = 0; i < 14; i++) {
       this.parts.push({ x: a.x + rand(-4, 4), y: a.y - 22 + rand(-4, 4), tx: b.x + rand(-6, 6), ty: b.y - 22 + rand(-6, 6), t: -i * 0.025, dur: 0.32, c: cols[i % cols.length], kind: 'proj', type });
     }
